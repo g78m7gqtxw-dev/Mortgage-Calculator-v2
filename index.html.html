@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mortgage Strategy Lab (iPhone)</title>
+
+  <style>
+    :root{
+      --bg:#f3f4f6;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --primary:#1a73e8;
+      --danger:#e74c3c;
+      --success:#16a34a;
+      --border:#e5e7eb;
+      --shadow:0 6px 18px rgba(0,0,0,.08);
+      --radius:14px;
+    }
+
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      font-family:-apple-system, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    header{
+      padding:16px 16px 8px;
+      max-width:980px;
+      margin:0 auto;
+    }
+
+    header h1{ margin:0; font-size:18px; }
+    header p{ margin:6px 0 0; font-size:13px; color:var(--muted); }
+
+    .wrap{
+      max-width:980px;
+      margin:0 auto;
+      padding:8px 16px 90px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:14px;
+    }
+    @media(min-width:860px){
+      .wrap{grid-template-columns:380px 1fr;}
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+
+    .section-title{
+      margin:0 0 10px;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:1px;
+      color:var(--primary);
+      border-bottom:2px solid #e8f0fe;
+      padding-bottom:8px;
+    }
+
+    .grid2{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+    @media(min-width:860px){
+      .grid2{grid-template-columns:1fr 1fr;}
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:600;
+      margin-bottom:6px;
+      color:#374151;
+    }
+
+    input{
+      width:100%;
+      padding:12px;
+      font-size:16px; /* prevents iOS zoom */
+      border-radius:10px;
+      border:1px solid #d1d5db;
+      outline:none;
+      background:#fff;
+    }
+    input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 3px rgba(26,115,232,.15);
+    }
+
+    .stats{
+      margin-top:12px;
+      background:#f8fafc;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+    }
+
+    .stat-line{
+      display:flex;
+      justify-content:space-between;
+      padding:8px 0;
+      border-bottom:1px solid #eef2f7;
+      font-size:13px;
+    }
+    .stat-line:last-child{border-bottom:none;}
+
+    .stat-value{font-weight:800;}
+    .danger{color:var(--danger);}
+    .success{color:var(--success);}
+
+    .banner{
+      margin-top:10px;
+      background:#e3f2fd;
+      border:1px solid #bbdefb;
+      border-radius:12px;
+      padding:10px;
+      text-align:center;
+    }
+    .banner .small{
+      font-size:11px;
+      font-weight:800;
+      color:var(--primary);
+      letter-spacing:.6px;
+    }
+    .banner .big{
+      font-size:20px;
+      font-weight:900;
+      color:var(--primary);
+      margin-top:4px;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      font-size:16px;
+      font-weight:900;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary{background:var(--primary); color:#fff;}
+    .btn-ghost{background:#fff; border:1px solid var(--border); color:#111827;}
+
+    canvas{
+      width:100%;
+      height:320px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      display:block;
+    }
+
+    details summary{
+      cursor:pointer;
+      font-weight:800;
+      padding:10px 0;
+      user-select:none;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      max-height:55vh;
+      border:1px solid var(--border);
+      border-radius:12px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+      min-width:720px;
+    }
+
+    th{
+      position:sticky;
+      top:0;
+      background:var(--primary);
+      color:#fff;
+      padding:10px;
+      text-align:left;
+      white-space:nowrap;
+      z-index:1;
+    }
+
+    td{
+      padding:9px 12px;
+      border-bottom:1px solid #eee;
+      white-space:nowrap;
+    }
+
+    .actionbar{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(243,244,246,.95);
+      border-top:1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .actionbar-inner{
+      max-width:980px;
+      margin:0 auto;
+      display:flex;
+      gap:10px;
+    }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:8px;
+      line-height:1.35;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Mortgage Strategy Lab</h1>
+  <p>Offline iPhone-friendly mortgage payoff simulator</p>
+</header>
+
+<main class="wrap">
+
+  <section class="card">
+    <h2 class="section-title">Loan Inputs</h2>
+
+    <div class="grid2">
+      <div>
+        <label for="origLoan">Original Loan</label>
+        <input id="origLoan" type="number" inputmode="decimal" value="523000">
+      </div>
+      <div>
+        <label for="rate">Interest Rate (%)</label>
+        <input id="rate" type="number" inputmode="decimal" step="0.001" value="6.625">
+      </div>
+      <div>
+        <label for="monthsPaid">Months Already Paid</label>
+        <input id="monthsPaid" type="number" inputmode="numeric" value="12">
+      </div>
+      <div>
+        <label for="currBal">Current Balance</label>
+        <input id="currBal" type="number" inputmode="decimal" value="189000">
+      </div>
+      <div>
+        <label for="totalBill">Total Monthly Bill</label>
+        <input id="totalBill" type="number" inputmode="decimal" value="2314.64">
+      </div>
+      <div>
+        <label for="escrow">Escrow (Taxes + Insurance)</label>
+        <input id="escrow" type="number" inputmode="decimal" value="869.40">
+      </div>
+      <div>
+        <label for="extra">Extra Principal</label>
+        <input id="extra" type="number" inputmode="decimal" value="0">
+      </div>
+    </div>
+
+    <!-- Always-visible button -->
+    <div style="margin-top:14px;">
+      <button id="analyzeBtnTop" class="btn-primary" type="button">Analyze Strategy</button>
+    </div>
+
+    <div class="hint">
+      If buttons still don’t respond in Textastic preview, open the file from the <strong>Files</strong> app in Safari (that environment always allows JS).
+    </div>
+
+    <div class="stats">
+      <div class="stat-line">
+        <span>Extra Paid Historically</span>
+        <span id="pastExtra" class="stat-value success">$0</span>
+      </div>
+      <div class="stat-line">
+        <span>Interest / Month</span>
+        <span id="resInt" class="stat-value danger">$0</span>
+      </div>
+      <div class="stat-line">
+        <span>Principal / Month</span>
+        <span id="resPri" class="stat-value success">$0</span>
+      </div>
+      <div class="banner">
+        <div class="small">DEBT FREE DATE</div>
+        <div id="resDate" class="big">—</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Balance Over Time</h2>
+    <canvas id="balanceChart"></canvas>
+
+    <details>
+      <summary>Amortization Schedule</summary>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Interest</th>
+              <th>Principal</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="scheduleBody"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+</main>
+
+<div class="actionbar">
+  <div class="actionbar-inner">
+    <button id="resetBtn" class="btn-ghost" type="button">Reset</button>
+    <button id="analyzeBtnBottom" class="btn-primary" type="button">Analyze</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---------- Helpers ----------
+  const $ = (id) => document.getElementById(id);
+
+  function num(id){
+    const v = parseFloat($(id).value);
+    return Number.isFinite(v) ? v : 0;
+  }
+
+  function money(x){
+    return x.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function money0(x){
+    return Math.round(x).toLocaleString();
+  }
+
+  // ---------- Defaults ----------
+  const DEFAULTS = {
+    origLoan: 523000,
+    rate: 6.625,
+    monthsPaid: 12,
+    currBal: 189000,
+    totalBill: 2314.64,
+    escrow: 869.40,
+    extra: 0
+  };
+
+  function resetDefaults(){
+    Object.entries(DEFAULTS).forEach(([k,v]) => { $(k).value = v; });
+    runCalculator();
+  }
+
+  // ---------- Core Calculator ----------
+  function runCalculator(){
+    try{
+      const P = num("origLoan");
+      const rate = num("rate");
+      const monthsPaid = Math.max(0, Math.floor(num("monthsPaid")));
+      const currBal = num("currBal");
+      const totalBill = num("totalBill");
+      const escrow = num("escrow");
+      const extra = num("extra");
+
+      const pi = totalBill - escrow;
+
+      // Basic validation
+      if (P <= 0 || rate <= 0 || currBal <= 0 || pi <= 0){
+        $("pastExtra").textContent = "$0";
+        $("resInt").textContent = "$0";
+        $("resPri").textContent = "$0";
+        $("resDate").textContent = "—";
+        $("scheduleBody").innerHTML = "";
+        drawChart([], []);
+        return;
+      }
+
+      const r = (rate/100)/12;
+      const n = 360;
+
+      // Standard payment for original loan
+      const standardPI = P * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+
+      // Theoretical balance after monthsPaid at standardPI
+      let theoBal = P;
+      for(let i=0; i<monthsPaid; i++){
+        const interest = theoBal * r;
+        const principal = standardPI - interest;
+        theoBal -= principal;
+      }
+
+      const pastExtra = Math.max(0, theoBal - currBal);
+      $("pastExtra").textContent = "$" + money0(pastExtra);
+
+      // Future simulation from current balance
+      let bal = currBal;
+      let rows = "";
+      let months = 0;
+      let labels = [];
+      let data = [];
+      const start = new Date();
+
+      while (bal > 0.01 && months < 480){
+        const interest = bal * r;
+        let principal = (pi + extra) - interest;
+
+        // Payment not covering interest -> stop & warn
+        if (principal <= 0){
+          $("resInt").textContent = "$" + money(interest);
+          $("resPri").textContent = "$0.00";
+          $("resDate").textContent = "Payment too low";
+          $("scheduleBody").innerHTML =
+            `<tr><td colspan="6"><strong>Payment is not covering monthly interest.</strong> Increase Total Bill or Extra Principal.</td></tr>`;
+          drawChart([], []);
+          return;
+        }
+
+        if (principal > bal) principal = bal;
+
+        if (months === 0){
+          $("resInt").textContent = "$" + money(interest);
+          $("resPri").textContent = "$" + money(principal);
+        }
+
+        bal -= principal;
+        months++;
+
+        const d = new Date(start.getFullYear(), start.getMonth() + months, 1);
+        const dateLabel = d.toLocaleString(undefined, { month:"short", year:"numeric" });
+
+        rows += `<tr>
+          <td>${months}</td>
+          <td>${dateLabel}</td>
+          <td>$${money(totalBill + extra)}</td>
+          <td style="color: var(--danger)">$${money(interest)}</td>
+          <td style="color: var(--success); font-weight:800;">$${money(principal)}</td>
+          <td><strong>$${money(Math.max(0, bal))}</strong></td>
+        </tr>`;
+
+        if (months % 6 === 0 || bal <= 0.01){
+          labels.push("M" + months);
+          data.push(Math.max(0, bal));
+        }
+      }
+
+      $("scheduleBody").innerHTML = rows;
+
+      const payoff = new Date(start.getFullYear(), start.getMonth() + months, 1);
+      $("resDate").textContent = payoff.toLocaleString(undefined, { month:"long", year:"numeric" });
+
+      drawChart(labels, data);
+    } catch (e){
+      // If anything goes sideways, show a readable message.
+      $("resDate").textContent = "Error running JS";
+      console.error(e);
+      alert("Calculator error: " + (e?.message || e));
+    }
+  }
+
+  // ---------- Chart ----------
+  function drawChart(labels, data){
+    const c = $("balanceChart");
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+
+    // Size the canvas to match displayed size (retina-aware)
+    const cssW = c.clientWidth || 600;
+    const cssH = 320;
+
+    const dpr = window.devicePixelRatio || 1;
+    c.width = Math.floor(cssW * dpr);
+    c.height = Math.floor(cssH * dpr);
+
+    // Reset transform every draw (prevents compounding scale)
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+
+    // Clear
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    // Background + frame
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,cssW,cssH);
+
+    const padL = 54, padR = 16, padT = 16, padB = 36;
+    const plotW = cssW - padL - padR;
+    const plotH = cssH - padT - padB;
+
+    ctx.strokeStyle = "#e5e7eb";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(padL, padT, plotW, plotH);
+
+    if (!data || data.length < 2){
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "14px -apple-system, system-ui, sans-serif";
+      ctx.fillText("Run analysis to see chart", padL + 12, padT + 28);
+      return;
+    }
+
+    const maxY = Math.max(...data, 1);
+    const minY = Math.min(...data, 0);
+
+    // Grid
+    const ticks = 4;
+    ctx.strokeStyle = "#f1f5f9";
+    ctx.lineWidth = 1;
+
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "12px -apple-system, system-ui, sans-serif";
+
+    for(let i=0; i<=ticks; i++){
+      const y = padT + (plotH * i / ticks);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + plotW, y);
+      ctx.stroke();
+
+      const val = Math.round(maxY - (maxY - minY) * i / ticks);
+      ctx.fillText("$" + val.toLocaleString(), 6, y + 4);
+    }
+
+    // Line
+    const xStep = plotW / (data.length - 1);
+    const yScale = plotH / (maxY - minY || 1);
+
+    // Fill under curve
+    ctx.beginPath();
+    ctx.moveTo(padL, padT + plotH);
+    for(let i=0; i<data.length; i++){
+      const x = padL + xStep * i;
+      const y = padT + (plotH - (data[i] - minY) * yScale);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(padL + plotW, padT + plotH);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(26,115,232,0.12)";
+    ctx.fill();
+
+    // Stroke line
+    ctx.beginPath();
+    for(let i=0; i<data.length; i++){
+      const x = padL + xStep * i;
+      const y = padT + (plotH - (data[i] - minY) * yScale);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = "#1a73e8";
+    ctx.lineWidth = 3;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.stroke();
+
+    // X labels (sparse)
+    const every = Math.max(1, Math.floor(labels.length / 5));
+    for(let i=0; i<labels.length; i+=every){
+      const x = padL + xStep * i;
+      ctx.fillStyle = "#6b7280";
+      ctx.font = "12px -apple-system, system-ui, sans-serif";
+      ctx.fillText(labels[i], Math.max(padL, x - 10), padT + plotH + 22);
+    }
+  }
+
+  // ---------- Wire buttons safely ----------
+  function wire(){
+    $("analyzeBtnTop").addEventListener("click", runCalculator);
+    $("analyzeBtnBottom").addEventListener("click", runCalculator);
+    $("resetBtn").addEventListener("click", resetDefaults);
+  }
+
+  // Init
+  document.addEventListener("DOMContentLoaded", () => {
+    wire();
+    resetDefaults(); // sets defaults + runs once
+  });
+
+  // In some iOS previewers DOMContentLoaded can be weird; this is a backup:
+  window.addEventListener("load", () => {
+    if (!$("resDate").textContent || $("resDate").textContent === "—") {
+      try { resetDefaults(); } catch {}
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
